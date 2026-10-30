@@ -1,0 +1,542 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Level Up Habits</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap">
+<style>
+/* Layout: a game-style character sheet. Hero with a 5-step "stat staircase", then one wide row per habit, then the quest log. */
+:root{
+  --bg:#F2F4F8; --surface:#FFFFFF; --ink:#11182B; --muted:#5B6479; --line:#DCE1EA;
+  --xp:#F2B10C; --xp-ink:#3A2A00;
+  --c-sleep:#4D5BD6; --c-move:#F25C3B; --c-read:#11978A; --c-reflect:#8E55DE; --c-connect:#DB3F84;
+  --display:"Bricolage Grotesque","Noto Sans KR","Noto Sans JP",system-ui,sans-serif;
+  --body:"Noto Sans KR","Noto Sans JP",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C111E; --surface:#151C2D; --ink:#E9EDF6; --muted:#9AA4BA; --line:#273049;
+  --xp:#F5C23A; --xp-ink:#2A1F00;
+  --c-sleep:#8590F2; --c-move:#FF8466; --c-read:#3CC4B4; --c-reflect:#B38BF2; --c-connect:#F26FA8;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C111E; --surface:#151C2D; --ink:#E9EDF6; --muted:#9AA4BA; --line:#273049;
+  --xp:#F5C23A; --xp-ink:#2A1F00;
+  --c-sleep:#8590F2; --c-move:#FF8466; --c-read:#3CC4B4; --c-reflect:#B38BF2; --c-connect:#F26FA8;
+  color-scheme:dark}
+:lang(ja){--body:"Noto Sans JP","Noto Sans KR",system-ui,sans-serif;--display:"Bricolage Grotesque","Noto Sans JP",system-ui,sans-serif}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.65;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.12}
+p{margin:0}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--xp);outline-offset:2px;border-radius:6px}
+
+/* Top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;gap:12px;padding-block:10px;flex-wrap:wrap}
+.brand{font-family:var(--display);font-weight:800;letter-spacing:.02em;font-size:17px;display:flex;align-items:center;gap:8px}
+.brand i{display:inline-block;width:14px;height:14px;background:var(--xp);clip-path:polygon(50% 0,100% 100%,0 100%)}
+.pill{font-family:var(--mono);font-size:12.5px;font-weight:600;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 10px;font-variant-numeric:tabular-nums}
+.langs{margin-left:auto;display:flex;gap:2px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+.langs button{border:0;background:transparent;border-radius:999px;padding:4px 11px;font-size:13.5px;font-weight:700;color:var(--muted)}
+.langs button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+
+/* Hero */
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:48px;align-items:end;padding-block:64px 40px}
+.eyebrow{font-family:var(--mono);font-size:12.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:18px}
+.hero h1{font-size:clamp(2.3rem,5.6vw,4.2rem);font-weight:800;letter-spacing:-.02em}
+.hero p.sub{margin-top:20px;max-width:34em;color:var(--muted);font-size:1.08rem}
+.cta{margin-top:28px;display:inline-flex;align-items:center;gap:10px;border:0;background:var(--xp);color:var(--xp-ink);font-weight:800;padding:13px 22px;border-radius:999px;font-size:1rem}
+.cta span{font-family:var(--mono)}
+.stairs{display:grid;grid-template-columns:repeat(5,1fr);align-items:end;gap:8px;height:300px}
+.step{display:flex;flex-direction:column;justify-content:flex-end;height:100%;min-width:0}
+.step .blk{border-radius:10px 10px 4px 4px;background:color-mix(in srgb,var(--c) 22%,var(--bg));border:2px solid color-mix(in srgb,var(--c) 45%,transparent);transition:background .35s,transform .35s;position:relative}
+.step.on .blk{background:var(--c);border-color:var(--c);transform:translateY(-6px)}
+.step .blk::after{content:"+20";position:absolute;top:8px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--bg);opacity:0;transition:opacity .35s}
+.step.on .blk::after{opacity:1}
+.step small{display:block;text-align:center;margin-top:8px;font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 66 days */
+.fact .wrap{padding-block:8px 40px}
+.fact-card{display:flex;gap:28px;align-items:center;flex-wrap:wrap;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);padding-block:22px}
+.big66{font-family:var(--display);font-weight:800;font-size:clamp(3.4rem,8vw,5.2rem);line-height:1;letter-spacing:-.03em}
+.big66 small{font-size:.32em;margin-left:6px;letter-spacing:0;color:var(--muted)}
+.fact-card .t{min-width:0;flex:1 1 260px}
+.fact-card .t b{display:block;font-size:1.15rem}
+.fact-card .t span{color:var(--muted);font-size:.92rem}
+.track66{flex:1 1 280px;display:grid;grid-template-columns:repeat(22,1fr);gap:3px;min-width:0}
+.track66 i{aspect-ratio:1;border-radius:2px;background:var(--line);max-width:100%}
+.track66 i.f{background:var(--xp)}
+
+/* Habit rows */
+.habits .wrap{display:flex;flex-direction:column;gap:14px;padding-block:8px 56px}
+.habit{display:grid;grid-template-columns:170px minmax(0,1fr) 170px;gap:28px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:26px 28px;position:relative;overflow:hidden}
+.habit::before{content:"";position:absolute;left:0;top:0;bottom:0;width:0;background:var(--c);transition:width .3s}
+.habit.on::before{width:6px}
+.stat{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:600;color:var(--c)}
+.num{font-family:var(--display);font-weight:800;font-size:2.4rem;line-height:1.05;margin-top:6px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.numl{font-size:.8rem;color:var(--muted);margin-top:4px;line-height:1.35}
+.habit h3{font-size:1.5rem;font-weight:800}
+.habit .line{font-weight:700;margin-top:4px}
+.dl{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin-top:14px}
+.dl dt{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.dl dd{margin:0;font-size:.95rem;max-width:36em}
+.toggle{border:2px solid var(--c);background:transparent;border-radius:12px;padding:12px 14px;font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;gap:8px;min-height:52px;transition:background .2s,color .2s}
+.toggle .box{width:18px;height:18px;border:2px solid var(--c);border-radius:5px;flex:none;display:grid;place-items:center}
+.habit.on .toggle{background:var(--c);color:var(--bg)}
+.habit.on .toggle .box{border-color:var(--bg);background:var(--bg)}
+.habit.on .toggle .box::after{content:"";width:8px;height:5px;border-left:2.5px solid var(--c);border-bottom:2.5px solid var(--c);transform:rotate(-45deg) translate(1px,-1px)}
+
+/* Quest */
+.quest{background:var(--ink);color:var(--bg)}
+.quest .wrap{padding-block:56px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:start}
+.quest h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800}
+.quest p{color:color-mix(in srgb,var(--bg) 70%,var(--ink));margin-top:10px}
+.meter-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:8px;font-variant-numeric:tabular-nums}
+.meter{height:22px;border-radius:999px;background:color-mix(in srgb,var(--bg) 14%,var(--ink));overflow:hidden;display:grid;grid-template-columns:repeat(5,1fr);gap:3px;padding:3px}
+.meter i{border-radius:999px;background:transparent;transition:background .3s}
+.meter i.f{background:var(--xp)}
+.qrow{margin-top:26px}
+.reset{margin-top:24px;background:transparent;border:1px solid color-mix(in srgb,var(--bg) 35%,var(--ink));color:var(--bg);border-radius:999px;padding:7px 16px;font-size:.88rem}
+.msg{font-weight:800;color:var(--xp)!important;min-height:1.6em}
+
+footer .wrap{padding-block:40px 56px;display:flex;flex-wrap:wrap;gap:24px 48px;justify-content:space-between;color:var(--muted);font-size:.88rem}
+footer h4{margin:0 0 8px;font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase}
+footer ul{margin:0;padding:0;list-style:none;display:grid;gap:4px}
+footer a{color:var(--ink);text-underline-offset:3px}
+.tag{font-family:var(--display);font-weight:800;font-size:1.4rem;color:var(--ink);max-width:16em}
+
+/* Hero buttons */
+.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.cta-row .cta{margin-top:0}
+.cta.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink);padding:11px 20px}
+
+/* Discussion board */
+.board .wrap{padding-block:64px;display:grid;grid-template-columns:340px minmax(0,1fr);gap:44px;align-items:start}
+.board h2{font-size:clamp(1.8rem,3.6vw,2.6rem);font-weight:800}
+.board .lead{color:var(--muted);margin-top:10px}
+.compose{margin-top:24px;display:grid;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+.compose label{display:grid;gap:6px}
+.compose label>span{font-family:var(--mono);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.fld{font:inherit;font-size:15px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px;width:100%;min-width:0}
+textarea.fld{min-height:120px;resize:vertical}
+.btn{border:0;background:var(--ink);color:var(--bg);font-weight:800;border-radius:999px;padding:11px 18px}
+.btn:disabled{opacity:.5;cursor:default}
+.note{font-size:.88rem;color:var(--muted)}
+.note:empty{display:none}
+.note.warn{color:var(--c-move)}
+.ro{margin-top:20px;padding:14px 16px;border:1px dashed var(--line);border-radius:12px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.chips button{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13px;font-weight:700;color:var(--muted)}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.plist{display:flex;flex-direction:column;border-top:2px solid var(--ink)}
+.post{padding-block:20px;border-bottom:1px solid var(--line);display:grid;gap:8px;min-width:0}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;font-size:13px;color:var(--muted)}
+.chip{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--c,var(--muted));border:1.5px solid color-mix(in srgb,var(--c,var(--muted)) 55%,transparent);border-radius:999px;padding:2px 9px}
+.who{display:inline-flex;align-items:center;gap:6px;color:var(--ink);font-weight:700}
+.who img{width:22px;height:22px;border-radius:50%;flex:none}
+.post h4{margin:0;font-family:var(--display);font-size:1.2rem;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.pbody{white-space:pre-wrap;overflow-wrap:anywhere;max-width:62ch}
+.acts{display:flex;flex-wrap:wrap;gap:4px 16px}
+.link{border:0;background:transparent;padding:4px 0;font-size:13.5px;font-weight:700;color:var(--muted);text-decoration:underline;text-underline-offset:3px}
+.link[data-armed]{color:var(--c-move)}
+.replies{margin-left:6px;padding-left:16px;border-left:2px solid var(--line);display:grid;gap:14px;margin-top:4px}
+.reply{display:grid;gap:3px;min-width:0}
+.reply p{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.95rem}
+.rform{display:flex;gap:8px}
+.rform .btn{padding:9px 16px;flex:none}
+.bstate{padding-block:24px;color:var(--muted)}
+.bstate:empty{display:none}
+
+@media (max-width:860px){
+  .board .wrap{grid-template-columns:1fr;gap:28px;padding-block:44px}
+  .hero .wrap{grid-template-columns:1fr;gap:32px;padding-block:40px 28px}
+  .stairs{height:190px}
+  .habit{grid-template-columns:1fr;gap:16px;padding:22px 20px}
+  .habit .head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+  .quest .wrap{grid-template-columns:1fr;gap:24px}
+}
+@media (max-width:520px){ .dl{grid-template-columns:1fr} .track66{grid-template-columns:repeat(11,1fr)} }
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="brand"><i></i>LEVEL UP</div>
+    <span class="pill" id="pill">LV 0 · 0 XP</span>
+    <nav class="langs" aria-label="Language">
+      <button data-l="ko">한국어</button><button data-l="en">EN</button><button data-l="ja">日本語</button><button data-l="es">ES</button>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div>
+      <div class="eyebrow" data-t="eyebrow"></div>
+      <h1 data-t="h1"></h1>
+      <p class="sub" data-t="sub"></p>
+      <div class="cta-row">
+        <button class="cta" id="cta"><b data-t="cta"></b><span>→</span></button>
+        <button class="cta ghost" id="toBoard"><b data-b="title"></b></button>
+      </div>
+    </div>
+    <div class="stairs" id="stairs" aria-hidden="true"></div>
+  </div>
+</section>
+
+<section class="fact">
+  <div class="wrap">
+    <div class="fact-card">
+      <div class="big66">66<small data-t="days"></small></div>
+      <div class="t"><b data-t="f66label"></b><span data-t="f66note"></span></div>
+      <div class="track66" id="track66" aria-hidden="true"></div>
+    </div>
+  </div>
+</section>
+
+<section class="habits"><div class="wrap" id="habits"></div></section>
+
+<section class="quest" id="quest">
+  <div class="wrap">
+    <div>
+      <h2 data-t="qTitle"></h2>
+      <p data-t="qSub"></p>
+      <p class="msg" id="msg"></p>
+      <button class="reset" id="reset" data-t="reset"></button>
+    </div>
+    <div>
+      <div class="qrow">
+        <div class="meter-label"><span data-t="todayXP"></span><span id="xpNum">0 / 100</span></div>
+        <div class="meter" id="meterToday"></div>
+      </div>
+      <div class="qrow">
+        <div class="meter-label"><span data-t="logged"></span><span id="dayNum">0 / 66</span></div>
+        <p style="margin-top:0;font-size:.88rem" data-t="loggedNote"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="board" id="board">
+  <div class="wrap">
+    <div>
+      <h2 data-b="title"></h2>
+      <p class="lead" data-b="sub"></p>
+      <form class="compose" id="compose" novalidate hidden>
+        <label for="pHabit"><span data-b="topic"></span><select class="fld" id="pHabit"></select></label>
+        <label for="pTitle"><span data-b="ptitle"></span><input class="fld" id="pTitle" maxlength="80" autocomplete="off"></label>
+        <label for="pBody"><span data-b="pbody"></span><textarea class="fld" id="pBody" maxlength="1000"></textarea></label>
+        <button class="btn" id="pSend" type="submit" data-b="post"></button>
+        <p class="note" id="pMsg" aria-live="polite"></p>
+      </form>
+      <p class="note ro" id="roNote" hidden></p>
+    </div>
+    <div style="min-width:0">
+      <div class="chips" id="chips" role="group"></div>
+      <div class="plist" id="plist"></div>
+      <p class="bstate" id="bState" aria-live="polite"></p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p class="tag" data-t="tagline"></p>
+    <div>
+      <h4 data-t="srcTitle"></h4>
+      <ul>
+        <li><a href="https://doi.org/10.1002/ejsp.674" target="_blank" rel="noopener">Lally et al. (2010), European Journal of Social Psychology</a></li>
+        <li><a href="https://www.who.int/news-room/fact-sheets/detail/physical-activity" target="_blank" rel="noopener">WHO — Physical activity</a></li>
+        <li><a href="https://www.cdc.gov/sleep/about/index.html" target="_blank" rel="noopener">CDC — About sleep</a></li>
+        <li><a href="https://www.adultdevelopmentstudy.org/" target="_blank" rel="noopener">Harvard Study of Adult Development</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<script>
+const IDS=["sleep","move","read","reflect","connect"];
+const T={
+ko:{eyebrow:"인생 레벨업 가이드",h1:"작은 습관 다섯 개로<br>인생을 레벨업",sub:"거창한 결심보다 매일 반복하는 작은 행동이 삶을 바꿉니다. 과학이 뒷받침하는 다섯 가지 습관을 오늘부터 시작해 보세요.",cta:"오늘의 퀘스트 시작",days:"일",f66label:"습관이 자리 잡기까지 걸리는 평균 기간",f66note:"런던대(UCL) 연구 · 사람에 따라 18~254일",whyL:"왜 효과가 있을까",startL:"가장 작은 시작",done:"오늘 했어요",doneOn:"완료 · +20 XP",qTitle:"오늘의 퀘스트",qSub:"해낸 습관을 위에서 체크하세요. 기록은 이 브라우저에만 저장됩니다.",todayXP:"오늘의 경험치",logged:"습관이 자리 잡기까지",loggedNote:"3개 이상 해낸 날을 하루로 셉니다.",reset:"오늘 기록 초기화",srcTitle:"출처",tagline:"완벽한 하루보다 꾸준한 하루.",m:["첫 번째 습관부터 체크해 보세요.","좋은 출발이에요!","절반 가까이 왔어요.","오늘은 기록되는 날! 계속 가요.","하나만 더!","오늘 퀘스트 완료! 레벨 업!"],
+h:{sleep:["에너지","충분히 자기","하루 7시간 이상, 같은 시간에 자고 일어나기","수면은 기억을 정리하고 감정을 회복시키는 시간입니다. 잠이 부족하면 집중력과 판단력이 가장 먼저 떨어집니다.","오늘 밤, 잠들기 30분 전 휴대폰 내려놓기","7h+","성인 권장 수면 시간"],
+move:["체력","매일 움직이기","숨이 조금 찰 정도로 30분 걷기","규칙적인 운동은 심장병·당뇨 위험을 낮추고 불안과 우울감도 덜어 줍니다.","엘리베이터 대신 계단, 점심 후 10분 산책","150분","WHO 주간 최소 권장 운동량"],
+read:["지혜","매일 읽기","하루 20분, 책 한 권을 늘 곁에","독서는 다른 사람의 수십 년 경험을 몇 시간 만에 빌려 오는 방법입니다.","가방이나 침대 옆에 책 한 권 두기","120시간","하루 20분 × 1년"],
+reflect:["명료함","기록하기","하루를 마치며 세 줄 쓰기","생각을 글로 옮기면 머릿속이 정리됩니다. 감사한 일을 적는 습관이 행복감을 높인다는 연구도 있습니다.","자기 전 '오늘 좋았던 일 3가지' 적기","3줄","하루 기록 목표"],
+connect:["유대","사람과 연결하기","소중한 사람에게 먼저 연락하기","1938년부터 이어진 하버드 성인 발달 연구는 좋은 관계가 행복과 건강을 가장 잘 예측한다고 말합니다.","이번 주, 한 사람에게 안부 메시지 보내기","1938~","하버드 성인 발달 연구 시작 연도"]}},
+en:{eyebrow:"A field guide to leveling up",h1:"Five small habits<br>that level up your life",sub:"Big resolutions fade. Small actions repeated every day are what change a life. Start these five science-backed habits today.",cta:"Start today's quest",days:"days",f66label:"Average time for a new habit to stick",f66note:"UCL study · ranged from 18 to 254 days",whyL:"Why it works",startL:"Smallest first step",done:"Done today",doneOn:"Done · +20 XP",qTitle:"Today's quest",qSub:"Check off the habits you did above. Your log stays in this browser only.",todayXP:"Today's XP",logged:"Road to 66 days",loggedNote:"A day counts when you finish 3 or more habits.",reset:"Reset today",srcTitle:"Sources",tagline:"A steady day beats a perfect one.",m:["Check off your first habit.","Nice start!","Almost halfway there.","Today counts! Keep going.","One more to go!","Quest complete. Level up!"],
+h:{sleep:["Energy","Sleep enough","7+ hours, same bedtime and wake time","Sleep is when your brain files memories and resets your mood. Cut it short and focus and judgment are the first to go.","Tonight, put your phone down 30 minutes before bed","7h+","Recommended for adults"],
+move:["Strength","Move every day","Walk 30 minutes, enough to breathe a little harder","Regular activity lowers the risk of heart disease and diabetes, and eases anxiety and low mood.","Take the stairs and walk 10 minutes after lunch","150 min","WHO weekly minimum for adults"],
+read:["Wisdom","Read daily","20 minutes a day, with a book always nearby","Reading lets you borrow decades of someone else's experience in a few hours.","Keep one book in your bag or by your bed","120 h","20 min × 1 year"],
+reflect:["Clarity","Write it down","Three lines at the end of each day","Putting thoughts into words clears your head, and research links gratitude journaling to greater well-being.","Before bed, write three good things about today","3 lines","Daily journaling goal"],
+connect:["Bond","Stay connected","Reach out first to people who matter","The Harvard Study of Adult Development, running since 1938, finds that good relationships best predict happiness and health.","Send one check-in message this week","1938","Harvard study begins"]}},
+ja:{eyebrow:"人生レベルアップガイド",h1:"5つの小さな習慣で<br>人生をレベルアップ",sub:"大きな決意より、毎日くり返す小さな行動が人生を変えます。科学に裏づけられた5つの習慣を今日から始めましょう。",cta:"今日のクエストへ",days:"日",f66label:"新しい習慣が身につくまでの平均期間",f66note:"ロンドン大学(UCL)の研究 · 個人差は18〜254日",whyL:"なぜ効くのか",startL:"いちばん小さな一歩",done:"今日やった",doneOn:"完了 · +20 XP",qTitle:"今日のクエスト",qSub:"できた習慣を上でチェックしましょう。記録はこのブラウザにだけ保存されます。",todayXP:"今日の経験値",logged:"習慣が根づくまで",loggedNote:"3つ以上できた日を1日として数えます。",reset:"今日の記録をリセット",srcTitle:"出典",tagline:"完璧な1日より、続く1日を。",m:["まずは1つチェックしてみましょう。","いいスタート!","もうすぐ半分です。","今日は記録に残る日!その調子。","あと1つ!","クエスト達成。レベルアップ!"],
+h:{sleep:["エナジー","しっかり眠る","毎日7時間以上、同じ時間に寝て起きる","睡眠は記憶を整理し、心を回復させる時間です。睡眠が減ると集中力と判断力から先に落ちていきます。","今夜、寝る30分前にスマホを置く","7h+","成人の推奨睡眠時間"],
+move:["体力","毎日動く","少し息が上がるくらいで30分歩く","定期的な運動は心臓病や糖尿病のリスクを下げ、不安や落ち込みもやわらげます。","エレベーターより階段、昼食後に10分散歩","150分","WHO推奨の週の最低運動量"],
+read:["知恵","毎日読む","1日20分、いつも本を1冊そばに","読書は、誰かの何十年分の経験を数時間で借りる方法です。","かばんや枕元に本を1冊置く","120時間","1日20分 × 1年"],
+reflect:["明晰さ","書き留める","1日の終わりに3行書く","考えを文字にすると頭が整理されます。感謝を書き出す習慣が幸福感を高めるという研究もあります。","寝る前に「今日よかったこと3つ」を書く","3行","1日の記録目標"],
+connect:["絆","人とつながる","大切な人に自分から連絡する","1938年から続くハーバード成人発達研究は、良い人間関係が幸福と健康を最もよく予測すると示しています。","今週、誰か1人に近況メッセージを送る","1938","ハーバード研究の開始年"]}},
+es:{eyebrow:"Guía para subir de nivel",h1:"Cinco pequeños hábitos<br>para subir de nivel tu vida",sub:"Los grandes propósitos se olvidan. Lo que cambia una vida son las pequeñas acciones de cada día. Empieza hoy estos cinco hábitos respaldados por la ciencia.",cta:"Empezar la misión de hoy",days:"días",f66label:"Tiempo medio para que un hábito nuevo se afiance",f66note:"Estudio de UCL · entre 18 y 254 días según la persona",whyL:"Por qué funciona",startL:"El primer paso más pequeño",done:"Hecho hoy",doneOn:"Hecho · +20 XP",qTitle:"Misión de hoy",qSub:"Marca arriba los hábitos que cumpliste. Tu registro solo se guarda en este navegador.",todayXP:"XP de hoy",logged:"Camino a los 66 días",loggedNote:"Un día cuenta cuando cumples 3 hábitos o más.",reset:"Reiniciar hoy",srcTitle:"Fuentes",tagline:"Un día constante vale más que uno perfecto.",m:["Marca tu primer hábito.","¡Buen comienzo!","Ya casi vas por la mitad.","¡Hoy cuenta! Sigue así.","¡Solo falta uno!","Misión cumplida. ¡Subes de nivel!"],
+h:{sleep:["Energía","Dormir bien","7 horas o más, con horarios fijos","Mientras duermes, el cerebro ordena recuerdos y recupera el ánimo. Si duermes poco, lo primero que falla es la concentración y el juicio.","Esta noche, deja el móvil 30 minutos antes de dormir","7 h+","Recomendado para adultos"],
+move:["Fuerza","Moverse cada día","Camina 30 minutos a un ritmo que te acelere la respiración","La actividad regular reduce el riesgo de enfermedades cardíacas y diabetes, y alivia la ansiedad y el bajón.","Usa las escaleras y camina 10 minutos después de comer","150 min","Mínimo semanal de la OMS"],
+read:["Sabiduría","Leer a diario","20 minutos al día, con un libro siempre a mano","Leer es tomar prestadas décadas de experiencia ajena en unas pocas horas.","Lleva un libro en la mochila o junto a la cama","120 h","20 min × 1 año"],
+reflect:["Claridad","Escribir","Tres líneas al final del día","Poner los pensamientos en palabras despeja la mente, y los estudios asocian el diario de gratitud con mayor bienestar.","Antes de dormir, anota tres cosas buenas del día","3 líneas","Meta diaria de escritura"],
+connect:["Vínculo","Conectar con otros","Escribe tú primero a quien te importa","El Estudio de Desarrollo Adulto de Harvard, activo desde 1938, concluye que las buenas relaciones son el mejor predictor de felicidad y salud.","Envía un mensaje a alguien esta semana","1938","Inicio del estudio de Harvard"]}}
+};
+
+const KEY="levelup-v1";
+let S={lang:null,log:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||"null");if(s&&typeof s==="object")S=Object.assign(S,s)}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const today=()=>new Date().toLocaleDateString("en-CA");
+const todayDone=()=>S.log[today()]||[];
+
+function pickLang(){
+  const h=location.hash.slice(1);
+  if(T[h])return h;
+  if(S.lang&&T[S.lang])return S.lang;
+  const n=(navigator.language||"en").slice(0,2);
+  return T[n]?n:"en";
+}
+let L=pickLang();
+
+// Build static structure
+const stairs=document.getElementById("stairs");
+const habitsEl=document.getElementById("habits");
+IDS.forEach((id,i)=>{
+  const st=document.createElement("div");st.className="step";st.style.setProperty("--c",`var(--c-${id})`);st.id="st-"+id;
+  st.innerHTML=`<div class="blk" style="height:${(i+1)*18}%"></div><small></small>`;stairs.appendChild(st);
+  const a=document.createElement("article");a.className="habit";a.id="h-"+id;a.style.setProperty("--c",`var(--c-${id})`);
+  a.innerHTML=`<div class="head"><div class="stat"></div><div class="num"></div><div class="numl"></div></div>
+  <div style="min-width:0"><h3></h3><p class="line"></p><dl class="dl"><div><dt class="wl"></dt><dd class="why"></dd></div><div><dt class="sl"></dt><dd class="start"></dd></div></dl></div>
+  <button class="toggle" id="tg-${id}" aria-pressed="false"><span class="box"></span><span class="tl"></span></button>`;
+  habitsEl.appendChild(a);
+  a.querySelector(".toggle").addEventListener("click",()=>toggle(id));
+});
+const tr=document.getElementById("track66");for(let i=0;i<66;i++)tr.appendChild(document.createElement("i"));
+const mt=document.getElementById("meterToday");for(let i=0;i<5;i++)mt.appendChild(document.createElement("i"));
+
+function toggle(id){
+  const d=today();const arr=new Set(S.log[d]||[]);
+  arr.has(id)?arr.delete(id):arr.add(id);
+  S.log[d]=[...arr];if(!S.log[d].length)delete S.log[d];save();render();
+}
+document.getElementById("reset").addEventListener("click",()=>{delete S.log[today()];save();render()});
+document.getElementById("cta").addEventListener("click",()=>document.getElementById("habits").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}));
+document.querySelectorAll(".langs button").forEach(b=>b.addEventListener("click",()=>{L=b.dataset.l;S.lang=L;save();if(location.hash!=="#"+L)location.hash=L;render()}));
+addEventListener("hashchange",()=>{const h=location.hash.slice(1);if(T[h]){L=h;S.lang=L;save();render()}});
+
+function render(){
+  const t=T[L];document.documentElement.lang=L;
+  document.querySelectorAll("[data-t]").forEach(el=>{el.innerHTML=t[el.dataset.t]});
+  document.querySelectorAll(".langs button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===L));
+  const done=todayDone();
+  IDS.forEach(id=>{
+    const h=t.h[id],a=document.getElementById("h-"+id),on=done.includes(id);
+    a.querySelector(".stat").textContent=h[0];a.querySelector(".num").textContent=h[5];a.querySelector(".numl").textContent=h[6];
+    a.querySelector("h3").textContent=h[1];a.querySelector(".line").textContent=h[2];
+    a.querySelector(".wl").textContent=t.whyL;a.querySelector(".why").textContent=h[3];
+    a.querySelector(".sl").textContent=t.startL;a.querySelector(".start").textContent=h[4];
+    a.querySelector(".tl").textContent=on?t.doneOn:t.done;
+    a.classList.toggle("on",on);a.querySelector(".toggle").setAttribute("aria-pressed",on);
+    const st=document.getElementById("st-"+id);st.classList.toggle("on",on);st.querySelector("small").textContent=h[0];
+  });
+  const n=done.length;
+  document.getElementById("pill").textContent=`LV ${n} · ${n*20} XP`;
+  document.getElementById("xpNum").textContent=`${n*20} / 100`;
+  [...mt.children].forEach((el,i)=>el.classList.toggle("f",i<n));
+  document.getElementById("msg").textContent=t.m[n];
+  const days=Object.values(S.log).filter(v=>v.length>=3).length;
+  document.getElementById("dayNum").textContent=`${Math.min(days,66)} / 66`;
+  [...tr.children].forEach((el,i)=>el.classList.toggle("f",i<days));
+  boardText();
+}
+
+/* ---------- Discussion board ---------- */
+const B={
+ko:{title:"습관 토론장",sub:"어떤 습관을 시작했는지, 어디서 막히는지 함께 이야기해요.",topic:"주제",general:"자유 주제",all:"전체",ptitle:"제목",ptitlePh:"예: 아침 산책 2주째 후기",pbody:"내용",pbodyPh:"경험이나 질문을 나눠 주세요",post:"글 올리기",posting:"올리는 중…",reply:"답글",replyPh:"답글 남기기",send:"등록",show:"답글 보기",hide:"답글 닫기",noReplies:"아직 답글이 없어요.",del:"삭제",confirmDel:"한 번 더 누르면 삭제돼요",empty:"아직 글이 없어요. 첫 이야기를 남겨 보세요.",emptyFilter:"이 주제의 글은 아직 없어요.",loading:"글을 불러오는 중…",off:"토론장은 Claude에 로그인한 상태로 이 페이지를 열면 볼 수 있어요.",ro:"지금은 글을 읽을 수만 있어요. 글을 쓰려면 페이지 주인에게 참여 권한을 요청하세요.",someone:"참여자",you:"나",err:"저장하지 못했어요. 잠시 후 다시 시도해 주세요.",full:"토론장 저장 공간이 가득 찼어요. 오래된 글을 정리해 주세요.",need:"제목과 내용을 모두 입력해 주세요.",loadErr:"글을 불러오지 못했어요. 페이지를 새로고침해 주세요."},
+en:{title:"Habit forum",sub:"Share which habit you started and where you get stuck.",topic:"Topic",general:"Open topic",all:"All",ptitle:"Title",ptitlePh:"e.g. Two weeks of morning walks",pbody:"Message",pbodyPh:"Share an experience or ask a question",post:"Post",posting:"Posting…",reply:"Reply",replyPh:"Write a reply",send:"Send",show:"Show replies",hide:"Hide replies",noReplies:"No replies yet.",del:"Delete",confirmDel:"Tap again to delete",empty:"No posts yet. Start the first conversation.",emptyFilter:"No posts on this topic yet.",loading:"Loading posts…",off:"Open this page while signed in to Claude to see the forum.",ro:"You can read the forum. To post, ask the page owner for contributor access.",someone:"Member",you:"You",err:"Couldn't save. Please try again in a moment.",full:"The forum is full. Delete some older posts to make room.",need:"Add a title and a message.",loadErr:"Couldn't load posts. Refresh the page."},
+ja:{title:"習慣フォーラム",sub:"始めた習慣や、つまずいていることを話し合いましょう。",topic:"テーマ",general:"フリートーク",all:"すべて",ptitle:"タイトル",ptitlePh:"例:朝の散歩を2週間続けてみた",pbody:"本文",pbodyPh:"体験や質問を書いてください",post:"投稿する",posting:"投稿中…",reply:"返信",replyPh:"返信を書く",send:"送信",show:"返信を見る",hide:"返信を閉じる",noReplies:"まだ返信はありません。",del:"削除",confirmDel:"もう一度押すと削除します",empty:"まだ投稿がありません。最初の話題を投稿しましょう。",emptyFilter:"このテーマの投稿はまだありません。",loading:"投稿を読み込み中…",off:"Claudeにログインした状態でこのページを開くとフォーラムを見られます。",ro:"今は閲覧のみです。投稿するには、ページの所有者に参加権限を依頼してください。",someone:"参加者",you:"自分",err:"保存できませんでした。少し待ってからもう一度お試しください。",full:"フォーラムの保存容量がいっぱいです。古い投稿を整理してください。",need:"タイトルと本文を入力してください。",loadErr:"投稿を読み込めませんでした。ページを再読み込みしてください。"},
+es:{title:"Foro de hábitos",sub:"Cuenta qué hábito empezaste y dónde te atascas.",topic:"Tema",general:"Tema libre",all:"Todos",ptitle:"Título",ptitlePh:"p. ej. Dos semanas caminando por la mañana",pbody:"Mensaje",pbodyPh:"Comparte una experiencia o haz una pregunta",post:"Publicar",posting:"Publicando…",reply:"Responder",replyPh:"Escribe una respuesta",send:"Enviar",show:"Ver respuestas",hide:"Ocultar respuestas",noReplies:"Aún no hay respuestas.",del:"Eliminar",confirmDel:"Pulsa otra vez para eliminar",empty:"Aún no hay publicaciones. Empieza la primera conversación.",emptyFilter:"Aún no hay publicaciones sobre este tema.",loading:"Cargando publicaciones…",off:"Abre esta página con tu sesión de Claude iniciada para ver el foro.",ro:"Puedes leer el foro. Para publicar, pide acceso de colaborador al dueño de la página.",someone:"Participante",you:"Tú",err:"No se pudo guardar. Inténtalo de nuevo en un momento.",full:"El foro está lleno. Elimina publicaciones antiguas para liberar espacio.",need:"Escribe un título y un mensaje.",loadErr:"No se pudieron cargar las publicaciones. Recarga la página."}
+};
+const TOPICS=["general",...IDS];
+let DB=null,USER=null,ME=null,OWNER=false,canWrite=false,ready=false;
+let posts=[],filter="all",openId=null,replies=[],unsubR=null,profs={},bKey="loading",ro=false;
+const nodes=new Map();
+const plist=document.getElementById("plist"),chipsEl=document.getElementById("chips"),bState=document.getElementById("bState");
+const compose=document.getElementById("compose"),pHabit=document.getElementById("pHabit"),pTitle=document.getElementById("pTitle"),pBody=document.getElementById("pBody"),pSend=document.getElementById("pSend"),pMsg=document.getElementById("pMsg"),roNote=document.getElementById("roNote");
+
+const topicName=k=>k==="general"?B[L].general:T[L].h[k][1];
+const topicColor=k=>k==="general"?"var(--muted)":`var(--c-${k})`;
+function rel(ms){
+  if(typeof ms!=="number")return "";
+  try{const r=new Intl.RelativeTimeFormat(L,{numeric:"auto"}),s=(ms-Date.now())/1000,a=Math.abs(s);
+    if(a<60)return r.format(0,"second");if(a<3600)return r.format(Math.round(s/60),"minute");
+    if(a<86400)return r.format(Math.round(s/3600),"hour");if(a<2592000)return r.format(Math.round(s/86400),"day");}catch(e){}
+  return new Date(ms).toLocaleDateString(L);
+}
+function clean(d){
+  const x=d.data()||{};
+  return {id:d.id,author:typeof x.author==="string"?x.author:"",habit:TOPICS.includes(x.habit)?x.habit:"general",
+    title:String(x.title||"").slice(0,80),body:String(x.body||"").slice(0,1000),createdAt:typeof x.createdAt==="number"?x.createdAt:0};
+}
+function setState(k){bKey=k;bState.textContent=k?B[L][k]:""}
+
+function boardText(){
+  const b=B[L];
+  document.querySelectorAll("[data-b]").forEach(el=>{el.textContent=b[el.dataset.b]});
+  pTitle.placeholder=b.ptitlePh;pBody.placeholder=b.pbodyPh;
+  if(pSend.disabled)pSend.textContent=b.posting;
+  const v=pHabit.value||"general";pHabit.textContent="";
+  TOPICS.forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=topicName(k);pHabit.appendChild(o)});pHabit.value=v;
+  chipsEl.textContent="";
+  ["all",...TOPICS].forEach(k=>{const c=document.createElement("button");c.type="button";c.textContent=k==="all"?b.all:topicName(k);
+    c.setAttribute("aria-pressed",filter===k);c.onclick=()=>{filter=k;boardText()};chipsEl.appendChild(c)});
+  roNote.textContent=ro?b.ro:"";
+  if(bKey)setState(bKey);
+  if(ready)renderBoard();
+}
+
+function makePost(id){
+  const a=document.createElement("article");a.className="post";
+  a.innerHTML=`<div class="meta"><span class="chip"></span><span class="who"><img alt=""><span class="nm"></span></span><time></time></div>
+  <h4></h4><p class="pbody"></p>
+  <div class="acts"><button class="link rb" type="button"></button><button class="link db" type="button" hidden></button></div>
+  <div class="replies" hidden><div class="rlist"></div><form class="rform" novalidate><input class="fld" id="r-${id}" maxlength="500" autocomplete="off"><button class="btn" type="submit"></button></form><p class="note rmsg"></p></div>`;
+  a.querySelector(".rb").onclick=()=>openId===id?closeReplies():openReplies(id);
+  armDelete(a.querySelector(".db"),()=>deletePost(id));
+  a.querySelector(".rform").addEventListener("submit",e=>{e.preventDefault();sendReply(id,a)});
+  return a;
+}
+function armDelete(btn,fn){
+  let t=null;
+  btn.onclick=()=>{
+    if(btn.dataset.armed){clearTimeout(t);delete btn.dataset.armed;btn.textContent=B[L].del;fn();return}
+    btn.dataset.armed="1";btn.textContent=B[L].confirmDel;
+    t=setTimeout(()=>{delete btn.dataset.armed;btn.textContent=B[L].del},3500);
+  };
+}
+function paintWho(el,id){
+  const p=profs[id];const nm=el.querySelector(".nm"),img=el.querySelector("img");
+  nm.textContent=id&&id===ME?(p&&p.name)||B[L].you:(p&&p.name)||B[L].someone;
+  if(p&&p.avatarUrl){img.src=p.avatarUrl;img.hidden=false}else img.hidden=true;
+}
+function fillPost(a,p){
+  const b=B[L],chip=a.querySelector(".chip");
+  chip.textContent=topicName(p.habit);chip.style.setProperty("--c",topicColor(p.habit));
+  paintWho(a.querySelector(".who"),p.author);
+  const tm=a.querySelector("time");tm.textContent=rel(p.createdAt);if(p.createdAt)tm.dateTime=new Date(p.createdAt).toISOString();
+  a.querySelector("h4").textContent=p.title;a.querySelector(".pbody").textContent=p.body;
+  const open=openId===p.id;
+  a.querySelector(".rb").textContent=open?b.hide:b.show;a.querySelector(".rb").setAttribute("aria-expanded",open);
+  const db=a.querySelector(".db");db.hidden=!(canWrite&&(OWNER||(ME&&p.author===ME)));if(!db.dataset.armed)db.textContent=b.del;
+  a.querySelector(".replies").hidden=!open;
+  a.querySelector(".rform").hidden=!canWrite;
+  const ri=a.querySelector(".rform input");ri.placeholder=b.replyPh;a.querySelector(".rform .btn").textContent=b.send;
+}
+async function resolveNames(){
+  if(!USER)return;
+  const ids=[...new Set([...posts.map(p=>p.author),...replies.map(r=>r.author)].filter(Boolean))];
+  if(!ids.length)return;
+  try{profs=Object.assign(profs,await USER.profiles(ids))}catch(e){return}
+  posts.forEach(p=>{const el=nodes.get(p.id);if(el)paintWho(el.querySelector(".who"),p.author)});
+  renderReplies(false);
+}
+function renderBoard(){
+  posts.forEach((p,i)=>{
+    let el=nodes.get(p.id);if(!el){el=makePost(p.id);nodes.set(p.id,el)}
+    fillPost(el,p);
+    const ref=plist.children[i];if(ref!==el)plist.insertBefore(el,ref||null);
+  });
+  const live=new Set(posts.map(p=>p.id));
+  for(const [id,el] of nodes)if(!live.has(id)){el.remove();nodes.delete(id);if(openId===id)closeReplies()}
+  let vis=0;posts.forEach(p=>{const s=filter==="all"||p.habit===filter;nodes.get(p.id).hidden=!s;if(s)vis++});
+  setState(vis?null:(posts.length?"emptyFilter":"empty"));
+  renderReplies(false);
+  resolveNames();
+}
+function renderReplies(fetchNames=true){
+  if(!openId)return;const a=nodes.get(openId);if(!a)return;
+  const box=a.querySelector(".rlist");box.textContent="";
+  if(!replies.length){const p=document.createElement("p");p.className="note";p.textContent=B[L].noReplies;box.appendChild(p)}
+  replies.forEach(r=>{
+    const d=document.createElement("div");d.className="reply";
+    d.innerHTML=`<div class="meta"><span class="who"><img alt=""><span class="nm"></span></span><time></time></div><p></p><div class="acts"><button class="link db" type="button" hidden></button></div>`;
+    paintWho(d.querySelector(".who"),r.author);d.querySelector("time").textContent=rel(r.createdAt);d.querySelector("p").textContent=r.body;
+    const db=d.querySelector(".db");db.textContent=B[L].del;db.hidden=!(canWrite&&(OWNER||(ME&&r.author===ME)));
+    const pid=openId;armDelete(db,()=>DB.doc(`posts/${pid}/replies/${r.id}`).delete().catch(()=>{}));
+    box.appendChild(d);
+  });
+  if(fetchNames)resolveNames();
+}
+function openReplies(id){
+  closeReplies();openId=id;replies=[];
+  unsubR=DB.collection(`posts/${id}/replies`).orderBy("createdAt","asc").limit(200).onSnapshot(s=>{
+    replies=s.docs.map(d=>{const x=d.data()||{};return{id:d.id,author:typeof x.author==="string"?x.author:"",body:String(x.body||"").slice(0,500),createdAt:typeof x.createdAt==="number"?x.createdAt:0}});
+    renderReplies();
+  },()=>{});
+  renderBoard();
+}
+function closeReplies(){if(unsubR){unsubR();unsubR=null}const was=openId;openId=null;replies=[];const wp=was&&posts.find(p=>p.id===was);if(wp&&nodes.get(was))fillPost(nodes.get(was),wp)}
+function failMsg(e,el){
+  const c=e&&e.code;
+  if(c==="invalid_argument"&&canWrite){setReadOnly()}
+  el.textContent=c==="quota_exceeded"?B[L].full:B[L].err;el.classList.add("warn");
+}
+function setReadOnly(){canWrite=false;ro=true;compose.hidden=true;roNote.hidden=false;roNote.textContent=B[L].ro;renderBoard()}
+
+compose.addEventListener("submit",async e=>{
+  e.preventDefault();pMsg.classList.remove("warn");
+  const title=pTitle.value.trim(),body=pBody.value.trim();
+  if(!title||!body){pMsg.textContent=B[L].need;pMsg.classList.add("warn");return}
+  pSend.disabled=true;pSend.textContent=B[L].posting;pMsg.textContent="";
+  try{
+    await DB.collection("posts").add({author:ME,habit:TOPICS.includes(pHabit.value)?pHabit.value:"general",title:title.slice(0,80),body:body.slice(0,1000),createdAt:Date.now()});
+    pTitle.value="";pBody.value="";filter="all";boardText();
+  }catch(err){failMsg(err,pMsg)}
+  pSend.disabled=false;pSend.textContent=B[L].post;
+});
+async function sendReply(id,a){
+  const inp=a.querySelector(".rform input"),msg=a.querySelector(".rmsg"),btn=a.querySelector(".rform .btn");
+  const body=inp.value.trim();if(!body)return;
+  btn.disabled=true;msg.textContent="";msg.classList.remove("warn");
+  try{await DB.collection(`posts/${id}/replies`).add({author:ME,body:body.slice(0,500),createdAt:Date.now()});inp.value=""}
+  catch(err){failMsg(err,msg)}
+  btn.disabled=false;
+}
+async function deletePost(id){
+  try{
+    const rs=await DB.collection(`posts/${id}/replies`).limit(500).get();
+    for(const d of rs.docs)await DB.doc(`posts/${id}/replies/${d.id}`).delete();
+    await DB.doc(`posts/${id}`).delete();
+  }catch(e){}
+}
+
+async function initBoard(){
+  setState("loading");
+  if(!(window.claude&&typeof window.claude.use==="function")){setState("off");return}
+  [DB,USER]=await Promise.all([claude.use("db"),claude.use("user")]);
+  if(!DB){setState("off");return}
+  if(USER){
+    ME=await USER.id();OWNER=await USER.isOwner();
+    const c=await USER.can("data.write");
+    canWrite=!!ME&&c!==false;
+  }
+  ro=!canWrite;compose.hidden=!canWrite;roNote.hidden=canWrite;roNote.textContent=ro?B[L].ro:"";
+  DB.collection("posts").orderBy("createdAt","desc").limit(300).onSnapshot(s=>{
+    posts=s.docs.map(clean);ready=true;renderBoard();
+  },()=>setState("loadErr"));
+}
+document.getElementById("toBoard").addEventListener("click",()=>document.getElementById("board").scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth"}));
+setInterval(()=>{if(ready)posts.forEach(p=>{const el=nodes.get(p.id);if(el)el.querySelector("time").textContent=rel(p.createdAt)})},60000);
+
+render();
+initBoard();
+</script>
+
+</body></html>
